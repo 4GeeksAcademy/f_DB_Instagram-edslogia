@@ -1,7 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, ForeignKey, Enum
+from sqlalchemy import String, Boolean, ForeignKey, Enum, Date, Time, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from eralchemy2 import render_er
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -10,13 +11,15 @@ class User(db.Model):
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
-
+    country: Mapped[str] = mapped_column()
+    gender: Mapped[str] = mapped_column(nullable=False)
 
     def serialize(self):
         return {
             "id": self.id,
             "email": self.email,
-            # do not serialize the password, its a security breach
+            "gender": self.gender,
+            "country": self.country
         }
 
 class Follower(db.Model):
@@ -33,10 +36,12 @@ class Follower(db.Model):
 class Post(db.Model):    
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    date_time: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
 
     def serialize(self):
         return{
-            "user_id": self.user_id
+            "user_id": self.user_id,
+            "date_time": self.date_time
         }
     
 class Comment(db.Model):
@@ -44,12 +49,16 @@ class Comment(db.Model):
     comment_text: Mapped[str] = mapped_column(String(180))
     author_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     post_id: Mapped[int] = mapped_column(ForeignKey('post.id'))
+    date: Mapped[datetime.date] = mapped_column(Date(), nullable=False)
+    time: Mapped[datetime.time] = mapped_column(Time(), nullable=False)
 
     def serialize(self):
         return {
             "comment_text": self.comment_text,
             "author_id": self.author_id,
-            "post_id": self.post_id
+            "post_id": self.post_id,
+            "date": self.date,
+            "time": self.time
         }
     
 class Media(db.Model):
